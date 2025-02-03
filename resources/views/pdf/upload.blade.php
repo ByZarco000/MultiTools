@@ -6,8 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Subir y Convertir PDF</title>
 
-    <!-- Aquí usas tu archivo local de Bootstrap -->
+    <!-- Bootstrap CSS -->
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
 
     <style>
         body {
@@ -42,17 +43,6 @@
             background-color: #0056b3;
         }
 
-        .file-input {
-            border-radius: 5px;
-            padding: 10px;
-            border: 1px solid #ced4da;
-        }
-
-        .file-input:focus {
-            border-color: #80bdff;
-            outline: none;
-        }
-
         .form-control-file {
             padding: 10px;
             border: 1px solid #ccc;
@@ -60,11 +50,6 @@
 
         .form-control-file:focus {
             border-color: #007bff;
-        }
-
-        .upload-icon {
-            font-size: 20px;
-            margin-right: 10px;
         }
 
         .alert {
@@ -93,43 +78,45 @@
                     <input type="file" name="pdf_file" id="pdf_file" class="form-control-file" required>
                 </div>
 
+                <div class="mb-3">
+                    <label for="output_format" class="form-label">Selecciona el formato de salida</label>
+                    <select name="output_format" id="output_format" class="form-select" required>
+                        <option value="" disabled selected>Seleccione un formato</option>
+                        <option value="docx">Word (DOCX)</option>
+                        <option value="doc">Word 97-2003 (DOC)</option>
+                        <option value="dotx">Plantilla de Word (DOTX)</option>
+                        <option value="dot">Plantilla de Word 97-2003 (DOT)</option>
+                        <option value="odt">OpenDocument Text (ODT)</option>
+                        <option value="ott">Plantilla OpenDocument (OTT)</option>
+                        <option value="rtf">Rich Text Format (RTF)</option>
+                        <option value="txt">Texto plano (TXT)</option>
+                        <option value="html">Página web (HTML)</option>
+                        <option value="mhtml">Archivo web (MHTML)</option>
+                        <option value="xml">Documento XML</option>
+                        <option value="epub">Libro electrónico (EPUB)</option>
+                        <option value="xps">Especificación de papel XML (XPS)</option>
+                        <option value="svg">Gráficos vectoriales escalables (SVG)</option>
+                        <option value="jpeg">Imagen JPEG</option>
+                        <option value="png">Imagen PNG</option>
+                        <option value="bmp">Imagen BMP</option>
+                        <option value="tiff">Imagen TIFF</option>
+                        <option value="gif">Imagen GIF</option>
+                    </select>
+                </div>
+
                 <div class="d-grid">
                     <button type="submit" class="btn btn-primary">
-                        <i class="upload-icon bi bi-file-earmark-pdf"></i> Convertir a Word
+                        <i class="bi bi-file-earmark-arrow-up"></i> Convertir PDF
                     </button>
                 </div>
             </form>
-
-            <!-- Spinner de carga -->
-            <div class="spinner-container" id="spinner">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Cargando...</span>
-                </div>
-                <p>Generando archivo...</p>
-            </div>
         </div>
-
-        <!-- Mensaje de éxito o error después de la conversión -->
-        @if(session('status'))
-            <div class="alert alert-{{ session('status')['type'] }} mt-3" role="alert">
-                {{ session('status')['message'] }}
-            </div>
-        @endif
     </div>
 
-    <!-- Bootstrap JS (Opcional, si necesitas funcionalidades como modals, tooltips, etc.) -->
+    <!-- Bootstrap JS -->
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
 
-    <!-- Script para mostrar el spinner al hacer submit -->
-    <script>
-        document.getElementById("pdfForm").addEventListener("submit", function () {
-            // Mostrar spinner
-            document.getElementById("spinner").style.display = "block";
 
-            // Deshabilitar el botón para evitar múltiples envíos
-            document.querySelector("button[type='submit']").disabled = true;
-        });
-    </script>
 
 </body>
 

@@ -17,55 +17,60 @@ class PDFController extends Controller
 
     public function convert(Request $request)
     {
-        // Validar que el archivo se haya subido correctamente
+        // Validar la entrada del formulario
         $request->validate([
             'pdf_file' => 'required|mimes:pdf|max:10240', // máximo 10MB
+            'output_format' => 'required|string|in:docx,doc,dotx,dot,odt,ott,rtf,txt,html,mhtml,xml,epub,xps,svg,jpeg,png,bmp,tiff,gif',
         ]);
-
-        // Obtener el archivo subido
+    
+        // Obtener el archivo y formato de salida
         $pdfFile = $request->file('pdf_file');
+        $outputFormat = $request->input('output_format');
+    
+        // Generar nombres de archivos
         $pdfFileName = time() . '_' . $pdfFile->getClientOriginalName();
-
-        // Guardar el archivo PDF en el almacenamiento
         $pdfPath = $pdfFile->storeAs('pdfs', $pdfFileName, 'public');
-
-        // Ruta completa del archivo PDF
+    
         $pdfFilePath = storage_path('app/public/' . $pdfPath);
-
-        // Ruta donde se guardará el archivo Word convertido
-        $outputFileName = pathinfo($pdfFileName, PATHINFO_FILENAME) . '.docx';
-        $outputFilePath = storage_path('app/public/converted/' . $outputFileName);
-
+        $outputFileName = pathinfo($pdfFileName, PATHINFO_FILENAME) . '.' . $outputFormat;
+        $outputDir = storage_path('app/public/converted/');
+    
+        // Asegurar que la carpeta "converted" exista
+        if (!file_exists($outputDir)) {
+            mkdir($outputDir, 0777, true);
+        }
+    
+        $outputFilePath = $outputDir . $outputFileName;
+    
         // Ruta al script Python
         $scriptPath = base_path('python-scripts/convert_pdf_to_docx.py');
-
-        // Ejecutar el script Python para convertir el PDF a Word
+    
+        // Ejecutar el script Python con el formato de salida
         $process = new Process([
             'C:\\xampp\\htdocs\\MultiTools\\venv\\Scripts\\python.EXE',
             $scriptPath,
             $pdfFilePath,
             $outputFilePath,
+            $outputFormat // Se envía el formato al script de Python
         ]);
-
+    
         try {
-            $process->mustRun(); // Ejecutar el proceso y esperar que termine
-
-            // Verificar si el archivo de salida existe
+            $process->mustRun();
+    
+            // Verificar si el archivo convertido existe
             if (file_exists($outputFilePath)) {
-                // Eliminar el archivo PDF original después de la conversión
-                unlink($pdfFilePath);
-
-                // Devolver el archivo convertido como descarga automática
+                unlink($pdfFilePath); // Eliminar el PDF original
+    
+                // Descargar el archivo convertido y eliminarlo después del envío
                 return response()->download($outputFilePath)->deleteFileAfterSend(true);
             } else {
-                // En caso de error, eliminar el archivo PDF si no fue convertido
                 unlink($pdfFilePath);
-                return response()->json(['error' => 'No se pudo convertir el archivo PDF.'], 500);
+                return redirect()->back()->with('status', ['type' => 'danger', 'message' => 'No se pudo convertir el archivo PDF.']);
             }
         } catch (ProcessFailedException $exception) {
-            // Si ocurre un error durante la ejecución del proceso
-            unlink($pdfFilePath);  // Eliminar el archivo PDF en caso de error
-            return response()->json(['error' => 'Error al ejecutar el proceso de conversión.'], 500);
+            unlink($pdfFilePath);
+            return redirect()->back()->with('status', ['type' => 'danger', 'message' => 'Error en la conversión: ' . $exception->getMessage()]);
         }
     }
+    
 }
